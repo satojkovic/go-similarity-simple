@@ -17,16 +17,16 @@ func isZeroVector(v Vector) bool {
 	return true
 }
 
-func dotProduct(v1 Vector, v2 Vector) (dp float64, err error) {
+func dotProduct(x Vector, y Vector) (dp float64, err error) {
 	dp = 0.0
 
-	if len(v1) != len(v2) {
+	if len(x) != len(y) {
 		return dp, errors.New("Length of two vectors don't match")
 	}
 
-	vsize := len(v1)
+	vsize := len(x)
 	for i := 0; i < vsize; i++ {
-		dp += (v1[i] * v2[i])
+		dp += (x[i] * y[i])
 	}
 
 	return dp, nil
@@ -71,18 +71,18 @@ func vSumSq(v Vector) float64 {
 	return sumSq
 }
 
-func CosineSimilarity(v1 Vector, v2 Vector) (sim float64, err error) {
+func CosineSimilarity(x Vector, y Vector) (sim float64, err error) {
 	sim = 0.0
-	if err := checkVector(v1, v2); err != nil {
+	if err := checkVector(x, y); err != nil {
 		return sim, err
 	}
 
-	dp, err := dotProduct(v1, v2)
+	dp, err := dotProduct(x, y)
 	if err != nil {
 		return sim, err
 	}
 
-	sim = dp / (normalize(v1) * normalize(v2))
+	sim = dp / (normalize(x) * normalize(y))
 
 	return sim, nil
 }
