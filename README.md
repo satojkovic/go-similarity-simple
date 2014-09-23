@@ -23,6 +23,7 @@ Features
 =====================
 
 * Cosine similarity
+* Pearson similarity
 
 License
 =====================
