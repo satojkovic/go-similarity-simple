@@ -1,4 +1,4 @@
-package similarity_simple
+package gosimsimple
 
 import (
 	"fmt"
