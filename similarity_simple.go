@@ -2,19 +2,80 @@ package gosimsimple
 
 import (
 	"errors"
+	"fmt"
 	"math"
 )
 
 type Vector []float64
 
-func isZeroVector(v Vector) bool {
-	vsize := len(v)
-	for i := 0; i < vsize; i++ {
-		if v[i] != 0.0 {
-			return false
-		}
+type PairwiseErr struct {
+	msg string
+}
+
+func newPairwiseErr(dimx, dimy int) *PairwiseErr {
+	err := new(PairwiseErr)
+	msgBody := "Incompatible dimension for X and Y vectors: "
+	msgDetail := fmt.Sprintf("X == %d while Y == %d", dimx, dimy)
+	err.msg = msgBody + msgDetail
+	return err
+}
+
+func (err *PairwiseErr) Error() string {
+	return err.msg
+}
+
+func checkPairwiseVector(x, y Vector) error {
+	if len(x) != len(y) {
+		return newPairwiseErr(len(x), len(y))
+	} else {
+		return nil
 	}
-	return true
+}
+
+func CosineSimilarity(x, y Vector) (sim float64, err error) {
+	if err := checkPairwiseVector(x, y); err != nil {
+		return sim, err
+	}
+
+	dp, err := dotProduct(x, y)
+	if err != nil {
+		return sim, err
+	}
+
+	sim = dp / (normalize(x) * normalize(y))
+
+	return sim, nil
+}
+
+func PearsonSimilarity(x, y Vector) (sim float64, err error) {
+	if err := checkPairwiseVector(x, y); err != nil {
+		return sim, nil
+	}
+
+	dp, err := dotProduct(x, y)
+	if err != nil {
+		return sim, err
+	}
+
+	sumx := vSum(x)
+	sumy := vSum(y)
+
+	sumxSq := vSumSq(x)
+	sumySq := vSumSq(y)
+
+	n := float64(len(x))
+	num := dp - (sumx * sumy / n)
+	den := (sumxSq - math.Pow(sumx, 2)/n) *
+		(sumySq - math.Pow(sumy, 2)/n)
+	den = math.Sqrt(den)
+
+	if den == 0.0 {
+		return sim, errors.New("Pearson similarity could not calculated because of division by zero")
+	} else {
+		sim = num / den
+	}
+
+	return sim, nil
 }
 
 func dotProduct(x Vector, y Vector) (dp float64, err error) {
@@ -43,16 +104,6 @@ func normalize(v Vector) (nv float64) {
 	return math.Sqrt(nv)
 }
 
-func checkVector(x Vector, y Vector) (err error) {
-	if len(x) == 0 || len(y) == 0 {
-		return errors.New("Length of vector is 0")
-	} else if isZeroVector(x) && isZeroVector(y) {
-		return errors.New("Both are zero vector")
-	} else {
-		return nil
-	}
-}
-
 func vSum(v Vector) float64 {
 	sum := 0.0
 	vsize := len(v)
@@ -69,52 +120,4 @@ func vSumSq(v Vector) float64 {
 		sumSq += (v[i] * v[i])
 	}
 	return sumSq
-}
-
-func CosineSimilarity(x Vector, y Vector) (sim float64, err error) {
-	sim = 0.0
-	if err := checkVector(x, y); err != nil {
-		return sim, err
-	}
-
-	dp, err := dotProduct(x, y)
-	if err != nil {
-		return sim, err
-	}
-
-	sim = dp / (normalize(x) * normalize(y))
-
-	return sim, nil
-}
-
-func PearsonSimilarity(x Vector, y Vector) (sim float64, err error) {
-	sim = 0.0
-	if err := checkVector(x, y); err != nil {
-		return sim, nil
-	}
-
-	dp, err := dotProduct(x, y)
-	if err != nil {
-		return sim, err
-	}
-
-	sumx := vSum(x)
-	sumy := vSum(y)
-
-	sumxSq := vSumSq(x)
-	sumySq := vSumSq(y)
-
-	n := float64(len(x))
-	num := dp - (sumx * sumy / n)
-	den := (sumxSq - math.Pow(sumx, 2)/n) *
-		(sumySq - math.Pow(sumy, 2)/n)
-	den = math.Sqrt(den)
-
-	if den == 0.0 {
-		return sim, errors.New("Pearson similarity could not calculated because of division by zero")
-	} else {
-		sim = num / den
-	}
-
-	return sim, nil
 }

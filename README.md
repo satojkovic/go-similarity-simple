@@ -1,6 +1,6 @@
 go-similarity-simple
 =====================
-A simple library of calculating similarity in Go.
+A simple library of calculating similarity in Go. Inspired by scikit-learn. 
 
 Example
 =====================

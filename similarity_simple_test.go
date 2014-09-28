@@ -29,28 +29,6 @@ func TestPersonSimilaritySimple(t *testing.T) {
 	}
 }
 
-func ExampleEmptySimilaritySimple() {
-	x := Vector{}
-	y := Vector{}
-
-	_, err := CosineSimilarity(x, y)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output: Length of vector is 0
-}
-
-func ExampleZeroSimilaritySimple() {
-	x := Vector{0.0, 0.0, 0.0}
-	y := Vector{0.0, 0.0, 0.0}
-
-	_, err := CosineSimilarity(x, y)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output: Both are zero vector
-}
-
 func ExampleNotMatchSimilaritySimple() {
 	x := Vector{1.0, 2.0, 3.0}
 	y := Vector{1.0, 2.0, 3.0, 4.0}
@@ -59,5 +37,5 @@ func ExampleNotMatchSimilaritySimple() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	// Output: Length of two vectors don't match
+	// Output: Incompatible dimension for X and Y vectors: X == 3 while Y == 4
 }
