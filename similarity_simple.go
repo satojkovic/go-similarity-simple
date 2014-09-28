@@ -78,9 +78,7 @@ func PearsonSimilarity(x, y Vector) (sim float64, err error) {
 	return sim, nil
 }
 
-func dotProduct(x Vector, y Vector) (dp float64, err error) {
-	dp = 0.0
-
+func dotProduct(x, y Vector) (dp float64, err error) {
 	if len(x) != len(y) {
 		return dp, errors.New("Length of two vectors don't match")
 	}
@@ -94,8 +92,6 @@ func dotProduct(x Vector, y Vector) (dp float64, err error) {
 }
 
 func normalize(v Vector) (nv float64) {
-	nv = 0.0
-
 	vsize := len(v)
 	for i := 0; i < vsize; i++ {
 		nv += (v[i] * v[i])
