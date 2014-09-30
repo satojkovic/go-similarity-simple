@@ -6,7 +6,8 @@ import (
 	"math"
 )
 
-type Vector []float64
+type Vector []interface{}
+type normVector []float64
 
 type PairwiseErr struct {
 	msg string
@@ -24,7 +25,7 @@ func (err *PairwiseErr) Error() string {
 	return err.msg
 }
 
-func checkPairwiseVector(x, y Vector) error {
+func checkPairwiseVector(x, y normVector) error {
 	if len(x) != len(y) {
 		return newPairwiseErr(len(x), len(y))
 	} else {
@@ -32,38 +33,74 @@ func checkPairwiseVector(x, y Vector) error {
 	}
 }
 
-func CosineSimilarity(x, y Vector) (sim float64, err error) {
-	if err := checkPairwiseVector(x, y); err != nil {
-		return sim, err
+func ToFloat64(vec []interface{}) (fvec normVector, err error) {
+	fvec = make(normVector, len(vec))
+	for i, val := range vec {
+		switch val.(type) {
+		case int:
+			fvec[i] = float64(val.(int))
+		case float64:
+			fvec[i] = val.(float64)
+		default:
+			return fvec, errors.New("Invalid value type of Vector")
+		}
 	}
 
-	dp, err := dotProduct(x, y)
+	return fvec, nil
+}
+
+func CosineSimilarity(x, y Vector) (sim float64, err error) {
+	X, err := ToFloat64(x)
 	if err != nil {
 		return sim, err
 	}
 
-	sim = dp / (normalize(x) * normalize(y))
+	Y, err := ToFloat64(y)
+	if err != nil {
+		return sim, err
+	}
+
+	if err := checkPairwiseVector(X, Y); err != nil {
+		return sim, err
+	}
+
+	dp, err := dotProduct(X, Y)
+	if err != nil {
+		return sim, err
+	}
+
+	sim = dp / (normalize(X) * normalize(Y))
 
 	return sim, nil
 }
 
 func PearsonSimilarity(x, y Vector) (sim float64, err error) {
-	if err := checkPairwiseVector(x, y); err != nil {
-		return sim, nil
-	}
-
-	dp, err := dotProduct(x, y)
+	X, err := ToFloat64(x)
 	if err != nil {
 		return sim, err
 	}
 
-	sumx := vSum(x)
-	sumy := vSum(y)
+	Y, err := ToFloat64(y)
+	if err != nil {
+		return sim, err
+	}
 
-	sumxSq := vSumSq(x)
-	sumySq := vSumSq(y)
+	if err := checkPairwiseVector(X, Y); err != nil {
+		return sim, nil
+	}
 
-	n := float64(len(x))
+	dp, err := dotProduct(X, Y)
+	if err != nil {
+		return sim, err
+	}
+
+	sumx := vSum(X)
+	sumy := vSum(Y)
+
+	sumxSq := vSumSq(X)
+	sumySq := vSumSq(Y)
+
+	n := float64(len(X))
 	num := dp - (sumx * sumy / n)
 	den := (sumxSq - math.Pow(sumx, 2)/n) *
 		(sumySq - math.Pow(sumy, 2)/n)
@@ -78,7 +115,7 @@ func PearsonSimilarity(x, y Vector) (sim float64, err error) {
 	return sim, nil
 }
 
-func dotProduct(x, y Vector) (dp float64, err error) {
+func dotProduct(x, y normVector) (dp float64, err error) {
 	if len(x) != len(y) {
 		return dp, errors.New("Length of two vectors don't match")
 	}
@@ -91,7 +128,7 @@ func dotProduct(x, y Vector) (dp float64, err error) {
 	return dp, nil
 }
 
-func normalize(v Vector) (nv float64) {
+func normalize(v normVector) (nv float64) {
 	vsize := len(v)
 	for i := 0; i < vsize; i++ {
 		nv += (v[i] * v[i])
@@ -100,7 +137,7 @@ func normalize(v Vector) (nv float64) {
 	return math.Sqrt(nv)
 }
 
-func vSum(v Vector) float64 {
+func vSum(v normVector) float64 {
 	sum := 0.0
 	vsize := len(v)
 	for i := 0; i < vsize; i++ {
@@ -109,7 +146,7 @@ func vSum(v Vector) float64 {
 	return sum
 }
 
-func vSumSq(v Vector) float64 {
+func vSumSq(v normVector) float64 {
 	sumSq := 0.0
 	vsize := len(v)
 	for i := 0; i < vsize; i++ {
